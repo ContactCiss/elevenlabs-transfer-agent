@@ -1,1 +1,2 @@
-elevenlabs
+git+https://github.com/elevenlabs/elevenlabs-python-sdk.git@main
+
