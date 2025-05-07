@@ -1,51 +1,53 @@
-from elevenlabs import (
-    ConversationalConfigApiModelInput,
-    ElevenLabs,
-    AgentConfigApiModelInput,
-    PromptAgentInput,
-    PromptAgentInputToolsItem_System,
-    SystemToolConfigInputParams_TransferToNumber,
-    PhoneNumberTransfer,
-)
-
 import os
+import requests
+import json
 
-# Haal API-key op uit omgeving
+# Haal je ElevenLabs API-sleutel op uit de environment
 api_key = os.getenv("ELEVEN_API_KEY")
-client = ElevenLabs(api_key=api_key)
 
-# Regels voor doorverbinden
-transfer_rules = [
-    PhoneNumberTransfer(
-        phone_number="+31884114114",
-        condition="Als de beller vraagt om doorverbonden te worden."
-    )
-]
+# Endpoint voor agent aanmaken
+url = "https://api.elevenlabs.io/v1/agents"
 
-# Configuratie van de tool
-transfer_tool = PromptAgentInputToolsItem_System(
-    type="system",
-    name="transfer_to_number",
-    description="Verbind de gebruiker door naar een medewerker wanneer daarom wordt gevraagd.",
-    params=SystemToolConfigInputParams_TransferToNumber(
-        transfers=transfer_rules
-    )
-)
+# Headers voor authenticatie
+headers = {
+    "xi-api-key": api_key,
+    "Content-Type": "application/json"
+}
 
-# Configuratie van de agent
-conversation_config = ConversationalConfigApiModelInput(
-    agent=AgentConfigApiModelInput(
-        prompt=PromptAgentInput(
-            prompt="Je bent een behulpzame Nederlandse klantenservice-assistent. Als de klant vraagt om doorverbonden te worden, gebruik je de transfer_to_number tool.",
-            first_message="Welkom bij Contactons! Waarmee kan ik je helpen?",
-            tools=[transfer_tool]
-        )
-    )
-)
+# Payload met doorverbind-tool
+payload = {
+    "agent": {
+        "prompt": {
+            "prompt": "Je bent een behulpzame Nederlandse klantenservice-assistent. Als de klant vraagt om doorverbonden te worden, gebruik je de transfer_to_number tool.",
+            "first_message": "Welkom bij Contactons! Waarmee kan ik je helpen?",
+            "tools": [
+                {
+                    "type": "system",
+                    "name": "transfer_to_number",
+                    "description": "Verbind de gebruiker door naar een medewerker wanneer daarom wordt gevraagd.",
+                    "params": {
+                        "transfers": [
+                            {
+                                "phone_number": "+31884114114",
+                                "condition": "Als de beller vraagt om doorverbonden te worden."
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+}
 
-# Maak de agent aan in ElevenLabs
-response = client.conversational_ai.create_agent(
-    conversation_config=conversation_config
-)
+# Verstuur POST-verzoek
+response = requests.post(url, headers=headers, data=json.dumps(payload))
 
-print("Nieuwe agent-ID:", response.agent_id)
+# Resultaat tonen
+if response.status_code == 200:
+    agent_data = response.json()
+    print("✅ Agent succesvol aangemaakt!")
+    print("Agent-ID:", agent_data.get("agent_id"))
+else:
+    print("❌ Fout bij aanmaken agent:")
+    print("Status:", response.status_code)
+    print("Antwoord:", response.text)
