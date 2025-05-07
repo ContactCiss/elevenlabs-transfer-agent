@@ -7,7 +7,7 @@ agent_id = "L2LOeYbvx1U1S71X8JWZ"
 api_key = os.getenv("ELEVEN_API_KEY")
 
 # ✅ Juiste endpoint om bestaande agent te updaten
-url = f"https://api.elevenlabs.io/v1/agents/{agent_id}"
+url = f"https://api.elevenlabs.io/v1/agents/L2LOeYbvx1U1S71X8JWZ"
 
 headers = {
     "xi-api-key": api_key,
