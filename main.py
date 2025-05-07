@@ -2,19 +2,19 @@ import os
 import requests
 import json
 
-# Haal je ElevenLabs API-sleutel op uit de environment
+# Je bestaande agent-ID
+agent_id = "L2LOeYbvx1U1S71X8JWZ"
 api_key = os.getenv("ELEVEN_API_KEY")
 
-# Endpoint voor agent aanmaken
-url = "https://api.elevenlabs.io/v1/agents"
+# ✅ Update endpoint
+url = f"https://api.elevenlabs.io/v1/conversational/agents/{agent_id}"
 
-# Headers voor authenticatie
 headers = {
     "xi-api-key": api_key,
     "Content-Type": "application/json"
 }
 
-# Payload met doorverbind-tool
+# Payload met transfer_to_number tool
 payload = {
     "agent": {
         "prompt": {
@@ -39,15 +39,13 @@ payload = {
     }
 }
 
-# Verstuur POST-verzoek
-response = requests.post(url, headers=headers, data=json.dumps(payload))
+# Voer de PATCH-uit om agent bij te werken
+response = requests.patch(url, headers=headers, data=json.dumps(payload))
 
-# Resultaat tonen
+# Toon resultaat
 if response.status_code == 200:
-    agent_data = response.json()
-    print("✅ Agent succesvol aangemaakt!")
-    print("Agent-ID:", agent_data.get("agent_id"))
+    print("✅ Agent succesvol geüpdatet met doorverbind-functionaliteit!")
 else:
-    print("❌ Fout bij aanmaken agent:")
+    print("❌ Fout bij updaten agent:")
     print("Status:", response.status_code)
     print("Antwoord:", response.text)
